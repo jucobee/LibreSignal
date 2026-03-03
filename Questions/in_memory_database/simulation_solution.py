@@ -1,7 +1,13 @@
 class InMemoryDatabase:
     def __init__(self):
-        # key: {field: value}
+        # For level 1 key: {field: value}
         self.database = {}
+        # For level 4 backup storage:
+        # To store all the backup timestamps for quick lookup of the latest 
+        # backup before a restore timestamp
+        self.backup_timestmps: list[int] = []
+        # To store the actual backup database
+        self.backup_states: list[dict] = []
 
     # Level 1
     def set(self, key, field, value):
@@ -112,3 +118,38 @@ class InMemoryDatabase:
                 items.append((field, value))
         items.sort()
         return ", ".join(f"{field}({value})" for field, value in items)
+    
+    def backup(self, timestamp):
+        # Create a backup of the current database state, including remaining lifespans for all records and fields
+        # key: {field: (value, remaining_lifespan)}
+        state = {}
+        for key, field in self.database.items():
+            for field, (value, expiry) in field.items():
+                if self._is_alive(key, field, timestamp):
+                    # Calculate remaining lifespan and save it in the backup
+                    # None means no expiry
+                    remaining_lifespan = expiry - timestamp if expiry is not None else None
+                    # Save the key, field, value, and remaining lifespan in the backup state
+                    if key not in state:
+                        state[key] = {}
+                    state[key][field] = (value, remaining_lifespan)
+        self.backup_timestmps.append(timestamp)
+        self.backup_states.append(state)
+        # Return the number of non-empty non-expired records (the number of keys) in the database
+        return str(len(state))
+    
+    def restore(self, timestamp, timestampToRestore):
+        import bisect
+        # Find the latest backup before timestampToRestore
+        idx = bisect.bisect_right(self.backup_timestmps, timestampToRestore) - 1
+        backup_state = self.backup_states[idx]
+        # Restore the database state from the backup, recalculating expiry times based on the current timestamp
+        self.database = {}
+        for key, fields in backup_state.items():
+            for field, (value, remaining_lifespan) in fields.items():
+                expiry = None
+                # If the field had a remaining lifespan in the backup, we need to recalculate its expiry time based on the current timestamp
+                if remaining_lifespan is not None:
+                    expiry = timestamp + remaining_lifespan
+                self._set_internal(key, field, value, expiry)
+        return ""

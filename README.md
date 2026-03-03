@@ -79,22 +79,33 @@ For example, instead of storing account data in a simple dict, create an `Accoun
 
 Each level has its own test suite. Run tests for a specific level from the <u>**root directory**</u>:
 
+#### 🏦 Bank System
+
 ```bash
-# Test Level 1
+# Test a specific level
 pytest Questions/bank_system/test_bank_system.py::TestLevel1 -v
-
-# Test Level 2
 pytest Questions/bank_system/test_bank_system.py::TestLevel2 -v
-
-# Test Level 3
 pytest Questions/bank_system/test_bank_system.py::TestLevel3 -v
-
-# Test Level 4
 pytest Questions/bank_system/test_bank_system.py::TestLevel4 -v
 
 # Run all tests
 pytest Questions/bank_system/test_bank_system.py -v
 ```
+
+#### 🗄️ In-Memory Database
+
+```bash
+# Test a specific level
+pytest Questions/in_memory_database/test_in_memory_database.py::TestLevel1 -v
+pytest Questions/in_memory_database/test_in_memory_database.py::TestLevel2 -v
+pytest Questions/in_memory_database/test_in_memory_database.py::TestLevel3 -v
+pytest Questions/in_memory_database/test_in_memory_database.py::TestLevel4 -v
+
+# Run all tests
+pytest Questions/in_memory_database/test_in_memory_database.py -v
+```
+
+> **Tip:** By default, `simulation.py` imports are commented out in the test files. To test your own implementation, open the test file and swap the import from `simulation_solution` to `simulation`.
 
 ## 📁 Project Structure
 
@@ -103,14 +114,22 @@ LibreSignal/
 ├── README.md
 ├── requirements.txt
 └── Questions/
-    └── bank_system/
-        ├── level1.md          # Level 1 requirements
-        ├── level2.md          # Level 2 requirements
-        ├── level3.md          # Level 3 requirements
-        ├── level4.md          # Level 4 requirements
-        ├── simulation.py      # Your implementation goes here
+    ├── bank_system/
+    │   ├── level1.md               # Level 1 requirements
+    │   ├── level2.md               # Level 2 requirements
+    │   ├── level3.md               # Level 3 requirements
+    │   ├── level4.md               # Level 4 requirements
+    │   ├── simulation.py           # Your implementation goes here
+    │   ├── simulation_solution.py  # Reference solution
+    │   └── test_bank_system.py     # Test suite
+    └── in_memory_database/
+        ├── level1.md               # Level 1 requirements
+        ├── level2.md               # Level 2 requirements
+        ├── level3.md               # Level 3 requirements
+        ├── level4.md               # Level 4 requirements
+        ├── simulation.py           # Your implementation goes here
         ├── simulation_solution.py  # Reference solution
-        └── test_bank_system.py     # Test suite
+        └── test_in_memory_database.py  # Test suite
 ```
 
 ## 📚 Official Documentation
@@ -149,5 +168,5 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-**Last Updated:** January 27, 2026  
+**Last Updated:** March 2, 2026  
 *Made with ❤️ in Boston*

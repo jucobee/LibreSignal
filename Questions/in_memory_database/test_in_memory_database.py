@@ -1,7 +1,7 @@
 import pytest
-from simulation_solution import InMemoryDatabase
-# Uncomment the following line to import your implementation of the InMemoryDatabase class:
-# from simulation import Simulation
+# Uncomment the following line to import solution implementation for testing
+# from simulation_solution import InMemoryDatabase
+from simulation import InMemoryDatabase
 
 class TestLevel1:
     def test_set_and_get(self):
@@ -181,15 +181,29 @@ class TestLevel3:
         # All field should be still be returned by scan_by_prefix regardless of expiry time
         assert db.scan_by_prefix("user1", prefix="a") == "age(30)"
         assert db.scan_by_prefix("user1", prefix="n") == "name(Alice), nationality(free_country)"
-        
-        """
-        user1: name: Alice [100, 110)
-                age: 30 [101, 106)
-                city: NY [102, 117)
-                nationality: free_country [103, 108)
 
-
-        """
-    
 class TestLevel4:
-    pass
+    def test_backup_returns_count(self):
+        db = InMemoryDatabase()
+        assert db.set_at_with_ttl("A", "B", "C", timestamp=1, ttl=10) == ""
+        assert db.backup(3) == "1"
+
+    def test_backup_excludes_expire(self):
+        db = InMemoryDatabase()
+        db.set_at_with_ttl("A", "B", "C", 1, 10)  # expiry = 11
+        assert db.backup(12) == "0"
+
+    def test_restore_from_spec_example(self):
+        db = InMemoryDatabase()
+        db.set_at_with_ttl("A", "B", "C", 1, 10)
+        db.backup(3)
+        db.set_at("A", "D", "E", 4)
+        db.backup(5)
+        db.delete_at("A", "B", 8)
+        db.backup(9)
+        # B should now expire at 10 + 6 = 16
+        db.restore(10, 7)
+        assert db.set_at("B", "C", "D", 11) == ""
+        assert db.scan_at("A", 15) == "B(C), D(E)"
+        assert db.scan_at("A", 16) == "D(E)"
+        assert db.scan_at("B", 17) == "C(D)"
